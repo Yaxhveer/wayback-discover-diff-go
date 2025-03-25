@@ -17,8 +17,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"wayback-discover-diff-go/internal/simhash"
-	"wayback-discover-diff-go/internal/utils"
+	"github.com/Yaxhveer/wayback-discover-diff-go/internal/simhash"
+	"github.com/Yaxhveer/wayback-discover-diff-go/internal/utils"
 
 	"github.com/redis/go-redis/v9"
 )

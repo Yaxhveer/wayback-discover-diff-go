@@ -6,17 +6,17 @@ import (
 	"strconv"
 	"sync"
 
-	"wayback-discover-diff-go/internal/job"
-	"wayback-discover-diff-go/internal/utils"
+	"github.com/Yaxhveer/wayback-discover-diff-go/internal/job"
+	"github.com/Yaxhveer/wayback-discover-diff-go/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
 
 type Handler struct {
-	redisClient   *redis.Client
-	jobsMap       map[string]*job.Job
-	mu            sync.RWMutex
+	redisClient *redis.Client
+	jobsMap     map[string]*job.Job
+	mu          sync.RWMutex
 }
 
 func NewHandler(redisClient *redis.Client) *Handler {

@@ -1,4 +1,4 @@
-module wayback-discover-diff-go
+module github.com/Yaxhveer/wayback-discover-diff-go
 
 go 1.24.1
 

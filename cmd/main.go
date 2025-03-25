@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Yaxhveer/wayback-discover-diff-go/internal/handlers"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"wayback-discover-diff-go/internal/handlers"
 )
 
 func main() {
