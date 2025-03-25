@@ -17,10 +17,13 @@ func extractHTMLFeatures(htmlStr string) map[string]int {
 	}
 
 	tagsToRemove := map[string]struct{}{
-		"script": {}, "style": {},
-		"noscript": {}, "meta": {},
-		"img": {}, "audio": {},
-		"video": {},
+		"script":   {},
+		"style":    {},
+		"noscript": {},
+		"meta":     {},
+		"img":      {},
+		"audio":    {},
+		"video":    {},
 	}
 
 	text := stripTags(doc, tagsToRemove)

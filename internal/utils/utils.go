@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,7 +35,7 @@ func YearSimhash(redisClient *redis.Client, url, year string, page, snapshotsPer
 	if err != nil || len(timestamps) == 0 {
 		return nil, fmt.Errorf("NO_CAPTURES")
 	}
-	// slices.Sort(timestamps)
+	slices.Sort(timestamps)
 	var timeStampsToFetch []string
 	for _, ts := range timestamps {
 		if ts == year {

@@ -43,6 +43,7 @@ type Job struct {
 	Duration   time.Duration
 	HTTPClient *http.Client
 	Headers    map[string]string
+	workerCh   chan struct{}
 }
 
 // NewJobQueue initializes the job queue with an HTTP client.
@@ -61,7 +62,6 @@ func NewJobQueue() *Job {
 	}
 
 	client := &http.Client{
-		Timeout: 35 * time.Second, // Slightly increased to handle slow responses
 		Transport: &http.Transport{
 			MaxIdleConns:        500,              // Increase idle connections for reuse
 			MaxIdleConnsPerHost: 250,              // Limit per host to prevent overloading
@@ -100,14 +100,13 @@ func (j *Job) RunJob(redisClient redis.Client, url, year string) string {
 		finalResult := map[string]string{}
 		// Process each capture concurrently
 		var wg sync.WaitGroup
-		workerCh := make(chan struct{}, CONCURRENCY_LIMIT)
+		j.workerCh = make(chan struct{}, CONCURRENCY_LIMIT)
 		var i int64
 		for _, capture := range captures {
-			workerCh <- struct{}{}
+
 			wg.Add(1)
 			go func(capture string) {
 				defer func() {
-					<-workerCh
 					wg.Done()
 				}()
 				timestamp, simhash := j.GetCalculation(capture)
@@ -221,12 +220,10 @@ func (j *Job) GetCalculation(capture string) (string, string) {
 	timestamp, digest := parts[0], parts[1]
 
 	// Check if digest is already processed
-	mu.Lock()
 	if simhash, exists := simhashMap[digest]; exists {
 		fmt.Printf("already seen %s\n", digest)
 		return timestamp, simhash
 	}
-	mu.Unlock()
 
 	// Simulate download (placeholder for actual implementation)
 	respData := j.DownloadCapture(timestamp)
@@ -255,6 +252,8 @@ func (j *Job) GetCalculation(capture string) (string, string) {
 }
 
 func (j *Job) DownloadCapture(timestamp string) string {
+	j.workerCh <- struct{}{}
+
 	fmt.Printf("fetching capture %s %s\n", timestamp, j.URL)
 	apiURL := fmt.Sprintf("https://web.archive.org/web/%sid_/%s", timestamp, j.URL)
 
@@ -276,6 +275,8 @@ func (j *Job) DownloadCapture(timestamp string) string {
 
 		break
 	}
+
+	<-j.workerCh
 
 	if resp == nil {
 		return ""
@@ -315,9 +316,9 @@ func (j *Job) DownloadCapture(timestamp string) string {
 }
 
 func exponentialBackoff(retry int) time.Duration {
-	base := 1000 * time.Microsecond
+	base := 100 * time.Microsecond
 	// Exponential backoff: base * 2^retry, plus some jitter
-	jitter := time.Duration(rand.Intn(2000)) * time.Microsecond
+	jitter := time.Duration(rand.Intn(100)) * time.Microsecond
 	return base*time.Duration(math.Pow(2, float64(retry))) + jitter
 }
 
