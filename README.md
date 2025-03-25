@@ -52,25 +52,6 @@ GET /calculate-simhash?url={URL}&year={YEAR}
 
 ---
 
-## Key Features
-
-1. **Efficient Job Management:**
-    - Replaces Celery with Goroutines for concurrent task processing.
-    - Ensures minimal overhead using Go's native concurrency model.
-
-2. **Robust Error Handling:**
-    - Implements retries with exponential backoff in case of connection errors.
-    - Uses a pool of 20 workers to prevent connection refusal issues.
-
-3. **Accurate SimHash Calculation:**
-    - Golang-based implementation of SimHash for deduplication and similarity analysis.
-
-4. **Logging:**
-    - Detailed logs are generated for tracking progress and diagnosing issues.
-
-
----
-
 ### **2. Get SimHash for a Specific Capture**
 ```
 GET /simhash?url={URL}&timestamp={TIMESTAMP}
@@ -120,6 +101,24 @@ GET /job?job_id={JOB_ID}
 - Checks the status of a running SimHash job.
 - **Returns:**
   - `{ "status": "pending", "job_id": "XXYYZZ", "info": "X out of Y captures have been processed" }`
+
+---
+
+## Key Features
+
+1. **Efficient Job Management:**
+    - Replaces Celery with Goroutines for concurrent task processing.
+    - Ensures minimal overhead using Go's native concurrency model.
+
+2. **Robust Error Handling:**
+    - Implements retries with exponential backoff in case of connection errors.
+    - Uses a pool of 20 workers to prevent connection refusal issues.
+
+3. **Accurate SimHash Calculation:**
+    - Golang-based implementation of SimHash for deduplication and similarity analysis.
+
+4. **Logging:**
+    - Detailed logs are generated for tracking progress and diagnosing issues.
 
 ---
 
