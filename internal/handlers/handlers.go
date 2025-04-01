@@ -159,8 +159,8 @@ func (h *Handler) CalculateSimhash(c *gin.Context) {
 	}
 
 	// added using config
-	job := job.NewJobQueue()
-	jobID := job.RunJob(*h.redisClient, url, year)
+	job := job.NewJob()
+	jobID := job.RunJob(h.redisClient, url, year)
 
 	h.mu.Lock()
 	h.jobsMap[jobID] = job

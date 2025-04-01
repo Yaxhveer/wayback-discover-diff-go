@@ -63,14 +63,6 @@ func handleResults(redisClient *redis.Client, timestamps []string, key string, s
 			timestamps = timestamps[start:end]
 		}
 	}
-	// if page != -1 {
-	// 	start := (page - 1) * snapshotsPerPage
-	// 	if start >= len(timestamps) {
-	// 		return nil
-	// 	}
-	// 	end := min(page*snapshotsPerPage, len(timestamps))
-	// 	timestamps = timestamps[start:end]
-	// }
 
 	results, err := redisClient.HMGet(context.Background(), key, timestamps...).Result()
 	if err != nil {

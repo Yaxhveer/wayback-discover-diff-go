@@ -41,26 +41,12 @@ type Job struct {
 	Info       string
 	startTime  time.Time
 	Duration   time.Duration
-	HTTPClient *http.Client
-	Headers    map[string]string
+	httpClient *http.Client
 	workerCh   chan struct{}
 }
 
-// NewJobQueue initializes the job queue with an HTTP client.
-func NewJobQueue() *Job {
-	headers := map[string]string{
-		"User-Agent":      "wayback-discover-diff",
-		"Accept-Encoding": "gzip,deflate",
-		"Connection":      "keep-alive",
-	}
-
-	// load from config
-	var cdxAuthToken string = "xxxx-yyy-zzz-www-xxxxx"
-
-	if cdxAuthToken != "" {
-		headers["cookie"] = "cdx_auth_token=" + cdxAuthToken
-	}
-
+// NewJob initializes the job queue with an HTTP client.
+func NewJob() *Job {
 	client := &http.Client{
 		Transport: &http.Transport{
 			MaxIdleConns:        500,              // Increase idle connections for reuse
@@ -70,13 +56,12 @@ func NewJobQueue() *Job {
 		},
 	}
 	return &Job{
-		HTTPClient: client,
-		Headers:    headers,
+		httpClient: client,
 	}
 }
 
 // RunJob executes a new job and returns the job_id
-func (j *Job) RunJob(redisClient redis.Client, url, year string) string {
+func (j *Job) RunJob(redisClient *redis.Client, url, year string) string {
 	j.startTime = time.Now()
 	jobID := fmt.Sprintf("%x", sha256.Sum256([]byte(url+year+time.Now().String())))
 
@@ -85,6 +70,7 @@ func (j *Job) RunJob(redisClient redis.Client, url, year string) string {
 	j.Year = year
 	j.State = "PENDING"
 	j.Info = fmt.Sprintf("Fetching %s captures for year %s", url, year)
+	j.workerCh = make(chan struct{}, CONCURRENCY_LIMIT)
 
 	go func() {
 		// Fetch CDX captures
@@ -100,7 +86,6 @@ func (j *Job) RunJob(redisClient redis.Client, url, year string) string {
 		finalResult := map[string]string{}
 		// Process each capture concurrently
 		var wg sync.WaitGroup
-		j.workerCh = make(chan struct{}, CONCURRENCY_LIMIT)
 		var i int64
 		for _, capture := range captures {
 
@@ -184,7 +169,7 @@ func (j *Job) FetchCDX(targetURL, year string) ([]string, error) {
 
 	fmt.Printf("Making the get fetch req Request, %f\n", time.Now().Sub(j.startTime).Seconds())
 
-	resp, err := j.HTTPClient.Do(req)
+	resp, err := j.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("No captures of %s for year %s, %s", targetURL, year, err.Error())
 	}
@@ -267,7 +252,7 @@ func (j *Job) DownloadCapture(timestamp string) string {
 			continue
 		}
 
-		resp, err = j.HTTPClient.Do(req)
+		resp, err = j.httpClient.Do(req)
 		if err != nil {
 			fmt.Printf("cannot fetch capture %s %s, %s\n", timestamp, j.URL, err.Error())
 			continue
@@ -328,7 +313,20 @@ func (j *Job) generateGetRequest(apiURL string) (*http.Request, error) {
 		return nil, err
 	}
 
-	for k, v := range j.Headers {
+	headers := map[string]string{
+		"User-Agent":      "wayback-discover-diff",
+		"Accept-Encoding": "gzip,deflate",
+		"Connection":      "keep-alive",
+	}
+
+	// load from config
+	var cdxAuthToken string = "xxxx-yyy-zzz-www-xxxxx"
+
+	if cdxAuthToken != "" {
+		headers["cookie"] = "cdx_auth_token=" + cdxAuthToken
+	}
+
+	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
 	return req, nil
