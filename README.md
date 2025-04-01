@@ -141,3 +141,20 @@ GET /job?job_id={JOB_ID}
     ```bash
     go run cmd/main.go
     ```
+___
+
+## Future Works
+
+- Improve Code Maintainability by adding clear, descriptive comments, following idiomatic Go practices, and structuring the codebase into well-organized packages for better readability.
+
+- Better configuration management by introducing a configuration file to eliminate hardcoded values and allow easy updates.
+
+- Implement statistics and monitoring for job processing, including request rates, memory usage, and execution times.
+
+- Compare the performance of the Golang implementation against the Python version, evaluating improvements in speed and efficiency.
+
+- Expand unit tests and other tests to ensure reliability, including edge cases and failure handling.
+
+- Develop a more user-friendly interface using a frontend framework (e.g., React) or lightweight solutions like HTMX for improved usability.
+
+- Implement better structured logging for debugging and monitoring.
